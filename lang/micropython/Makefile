@@ -17,6 +17,11 @@ USES=		gmake pkgconfig python:,build
 
 BINARY_ALIAS=	python3=${PYTHON_CMD}
 
+USE_GITHUB=     yes
+GH_ACCOUNT?=    glasgowPLI
+GH_PROJECT?=    micropython
+GH_TAGNAME?=    201951645afb7cd0990c95144e204e1f536761db
+
 BUILD_WRKSRC=	${WRKSRC}/ports/unix
 TEST_WRKSRC=	${WRKSRC}/ports/unix
 

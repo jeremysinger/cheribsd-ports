@@ -46,8 +46,8 @@ SHEBANG_FILES=	\
 		llvm/utils/lit/lit.py \
 		llvm/utils/llvm-lit/llvm-lit.in
 
-SUB_FILES=	llvm-wrapper.sh
-SUB_LIST=	LLVM_PREFIX="${LLVM_PREFIX}" LLVM_SUFFIX="${LLVM_SUFFIX}"
+SUB_FILES+=	llvm-wrapper.sh
+SUB_LIST+=	LLVM_PREFIX="${LLVM_PREFIX}" LLVM_SUFFIX="${LLVM_SUFFIX}"
 
 CMAKE_INSTALL_PREFIX=	${LLVM_PREFIX}
 CMAKE_SOURCE_PATH=	${WRKSRC}/llvm
@@ -154,7 +154,7 @@ USES+=		${_USES_PYTHON}
 
 .include <bsd.port.pre.mk>
 .include "${.CURDIR}/Makefile.COMMANDS"
-.include "${.CURDIR}/Makefile.MAN1SRCS"
+.sinclude "${.CURDIR}/Makefile.MAN1SRCS"
 
 post-patch:
 	${REINPLACE_CMD} -e 's|import lit|import ${LIT_MOD_NAME}|' \

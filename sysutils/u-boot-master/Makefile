@@ -20,24 +20,27 @@ BUILD_DEPENDS+=	gsed:textproc/gsed \
 		swig:devel/swig \
 		dtc>=1.4.1:sysutils/dtc \
 		mkimage:sysutils/u-boot-tools \
-		${PYTHON_PKGNAMEPREFIX}setuptools-pkg>=0:devel/py-setuptools-pkg@${PY_FLAVOR}
-BUILD_DEPENDS+=	${COMPILER}:devel/${COMPILER}
+		${PYTHON_SITELIBDIR}/setuptools_pkg:devel/py-setuptools-pkg@${PY_FLAVOR}
+BUILD_DEPENDS+=	${LOCALBASE64}/bin/${COMPILER}:devel/${COMPILER}
 
+.if !defined(NO_MKEFICAPSULE)
 # For mkeficapsule
 BUILD_DEPENDS+=	e2fsprogs-libuuid>=0:misc/e2fsprogs-libuuid \
 		gnutls>=0:security/gnutls
+.endif
 
 USES=		bison gmake python:build pkgconfig shebangfix tar:bz2
 BINARY_ALIAS=	bison=${LOCALBASE}/bin/bison dtc=${LOCALBASE}/bin/dtc sed=gsed python3=${PYTHON_CMD}
 
-SHEBANG_FILES=	tools/binman/binman arch/arm/mach-rockchip/make_fit_atf.py
+SHEBANG_FILES=	tools/binman/binman
 SSP_UNSAFE=	yes
 UBOOT_DIR=	share/u-boot/${PORTNAME}${PKGNAMESUFFIX}
 INST=		${PREFIX}/${UBOOT_DIR}
 DESCR?=		${.CURDIR}/pkg-descr
 
-MAKE_ENV+=	V=1 CROSS_COMPILE=${CROSS_COMPILE} PYTHON=${PYTHON_CMD} CC=clang
+MAKE_ENV+=	V=1 CROSS_COMPILE=${LOCALBASE64}/bin/${CROSS_COMPILE} PYTHON=${PYTHON_CMD} CC=clang
 MAKE_ARGS+=	${ARCHFLAGS}
+MAKE_ARGS+=	HOSTCC="${CC}"
 
 NO_ARCH=	yes
 
@@ -118,7 +121,7 @@ UBOOT_PLIST_QEMU=	u-boot.bin
 .if !defined(UBOOT_VERSION) && defined(UBOOT_VERSION_${FAMILY:tu})
 UBOOT_VERSION=${UBOOT_VERSION_${FAMILY:tu}}
 .endif
-UBOOT_VERSION?=	2023.01
+UBOOT_VERSION?=	2023.07.02
 
 # If a slave port defines a PORTREVISION use it
 .if defined(U_BOOT_SLAVE_PORTREVISION_${UBOOT_VERSION})

@@ -47,10 +47,9 @@ OPTIONS_RADIO_SSL=	GNUTLS OPENSSL WOLFSSL
 OPTIONS_SINGLE_GSSAPI=	GSSAPI_BASE GSSAPI_HEIMDAL GSSAPI_MIT GSSAPI_NONE
 OPTIONS_SINGLE_RESOLV=	CARES THREADED_RESOLVER
 OPTIONS_DEFAULT=ALTSVC CA_BUNDLE COOKIES GSSAPI_${${SSL_DEFAULT} == base :?BASE :NONE} DICT FTP GOPHER HTTP HTTP2 IMAP LIBSSH2 NTLM OPENSSL POP3 PROXY RTSP SMTP STATIC TELNET TFTP THREADED_RESOLVER TLS_SRP
-.if !${ABI:Mpurecap}
 # PSL depends on Python which is not available for CheriABI packages yet.
 OPTIONS_DEFAULT+=	PSL
-.endif
+OPTIONS_EXCLUDE_purecap=PSL
 OPTIONS_SUB=	yes
 ALTSVC_DESC=	HTTP Alternative Services support
 CA_BUNDLE_DESC=	Enable CA bundle for OpenSSL/GnuTLS
@@ -174,6 +173,12 @@ IGNORE=		only supports TLS-SRP with either OpenSSL or GnuTLS
 .if ${PORT_OPTIONS:MLDAPS} && !${PORT_OPTIONS:MGNUTLS} && !${PORT_OPTIONS:MOPENSSL} && !${PORT_OPTIONS:MWOLFSSL}
 IGNORE=		only supports LDAPS with SSL
 .endif
+
+# Update the LD_LIBRARY_PATH environment variable name to the ABI-specific one.
+pre-configure:
+	${REINPLACE_CMD} -i '' \
+	    -e "s@shlibpath_var=LD_LIBRARY_PATH@shlibpath_var=${LD_LIBRARY_PATH_VAR}@" \
+	    ${WRKSRC}/configure
 
 post-install:
 	${INSTALL_DATA} ${WRKSRC}/docs/libcurl/libcurl.m4 ${STAGEDIR}${PREFIX}/share/aclocal/

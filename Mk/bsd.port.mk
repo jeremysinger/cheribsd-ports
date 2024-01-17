@@ -253,6 +253,20 @@ FreeBSD_MAINTAINER=	portmgr@FreeBSD.org
 #				- Set this instead of ONLY_FOR_ARCHS if the given port
 #				  fetches and installs compiled i386 binaries.
 #
+# Set these if your port only makes sense to certain ABIs.
+# They are lists containing names for them (e.g., "purecap").
+# (Defaults: not set.)
+#
+# ONLY_FOR_ABIS
+#				- Only build ports if one of ${ABI} matches one of these.
+# NOT_FOR_ABIS	- Only build ports if none of ${ABI} doesn't match one of these.
+# ONLY_FOR_ABIS_REASON
+# ONLY_FOR_ABIS_REASON_${ABI}
+#				- Reason why it's only for ${ONLY_FOR_ABIS}s
+# NOT_FOR_ABIS_REASON
+# NOT_FOR_ABIS_REASON_${ABI}
+#				- Reason why it's not for ${NOT_FOR_ABIS}s
+#
 # Dependency checking.  Use these if your port requires another port
 # not in the list below.  (Default: empty.)
 #
@@ -2864,6 +2878,55 @@ IGNORE+=	(reason: ${NOT_FOR_ARCHS_REASON})
 
 .    endif
 
+# Check the ABIs
+.    if defined(ONLY_FOR_ABIS)
+.      for __ABI in ${ONLY_FOR_ABIS}
+.        if ${ABI:M${__ABI}} != ""
+__ABI_OK?=		1
+.        endif
+.      endfor
+.    else
+__ABI_OK?=		1
+.    endif
+
+.    if defined(NOT_FOR_ABIS)
+.      for __NABI in ${NOT_FOR_ABIS}
+.        if ${ABI:M${__NABI}} != ""
+.undef __ABI_OK
+.        endif
+.      endfor
+.    endif
+
+.    if !defined(__ABI_OK)
+.      if defined(ONLY_FOR_ABIS)
+IGNORE=		is only for ${ONLY_FOR_ABIS:O},
+.      else # defined(NOT_FOR_ABIS)
+IGNORE=		does not build for ${NOT_FOR_ABIS:O},
+.      endif
+IGNORE+=	while you are running ${ABI:O}
+
+.      for _abi in ${ABI}
+.        if defined(ONLY_FOR_ABIS_REASON_${_abi})
+IGNORE+=	(reason: ${ONLY_FOR_ABIS_REASON_${_abi}})
+_ONLY_FOR_ABIS_REASON_SKIP=	1
+.        endif
+.      endfor
+.      if !defined(_ONLY_FOR_ABIS_REASON_SKIP) && defined(ONLY_FOR_ABIS_REASON)
+IGNORE+=	(reason: ${ONLY_FOR_ABIS_REASON})
+.      endif
+
+.      for _abi in ${ABI}
+.        if defined(NOT_FOR_ABIS_REASON_${_abi})
+IGNORE+=	(reason: ${NOT_FOR_ABIS_REASON_${_abi}})
+_NOT_FOR_ABIS_REASON_SKIP=	1
+.        endif
+.      endfor
+.      if !defined(_NOT_FOR_ABIS_REASON_SKIP) && defined(NOT_FOR_ABIS_REASON)
+IGNORE+=	(reason: ${NOT_FOR_ABIS_REASON})
+.      endif
+
+.    endif
+
 # Check the user interaction and legal issues
 .    if !defined(NO_IGNORE)
 .      for v in ${OSREL} ${OSREL:R}
@@ -3318,8 +3381,10 @@ run-cheri-gnulib-fixup:
 # with an include of the system header until upstream finds a better solution.
 	@for f in `${FIND} ${WRKDIR} -type f -name stdint.in.h` ; do \
 		if grep -q "typedef long int gl_intptr_t" $${f} ; then \
-			echo "Replacing $${f}" ; \
-			echo "#include_next <stdint.h>" > $${f} ; \
+			if ! grep -q "__INTPTR_WIDTH__ != (defined _WIN64 ? LLONG_WIDTH : LONG_WIDTH)" $${f} ; then \
+				echo "Updating $${f}" ; \
+				cp "${TEMPLATES}/gnulib/stdint.in.h" $${f} ; \
+			fi \
 		fi \
 	done
 # Patch rawmemchr not to use uintptr_t to store arbitrary bytes.
@@ -3331,12 +3396,6 @@ run-cheri-gnulib-fixup:
 			else \
 				${PATCH} -s $${f} ${PORTSDIR}/devel/gnulib/files/extrapatch-cheribsd-rawmemchr-v2.patch ; \
 			fi ; \
-		fi \
-	done
-	@for f in `${FIND} ${WRKDIR} -type f -name randperm.c` ; do \
-		if grep -q "verify (SIZE_WIDTH " $${f} ; then \
-			echo "Replacing $${f}" ; \
-			${PATCH} -s $${f} ${PORTSDIR}/sysutils/coreutils/files/extrapatch-cheribsd-randperm.patch ; \
 		fi \
 	done
 .    endif

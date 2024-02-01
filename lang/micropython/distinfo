@@ -1,6 +1,6 @@
-TIMESTAMP = 1630664518
-SHA256 (micropython-micropython-v1.17_GH0.tar.gz) = c21dbf8144237b3dbe3847c9ad5264cd0f3104eb078c810b3986004cce8fcd70
-SIZE (micropython-micropython-v1.17_GH0.tar.gz) = 6467563
+TIMESTAMP = 1706785907
+SHA256 (glasgowPLI-micropython-v1.20-6035f726a173029936914635dc8aad8610d2966b_GH0.tar.gz) = 55ebe8e5fc937be6646d82c41c88808b7291d1a8b97a3acf212f693621eae1a4
+SIZE (glasgowPLI-micropython-v1.20-6035f726a173029936914635dc8aad8610d2966b_GH0.tar.gz) = 7319165
 SHA256 (micropython-axtls-531cab9_GH0.tar.gz) = cd1b9bf60d34e86e62046dd595ddb34b3960d36f44bf7a31d67e253a5bc24fe1
 SIZE (micropython-axtls-531cab9_GH0.tar.gz) = 1325384
 SHA256 (pfalcon-berkeley-db-1.xx-35aaec4_GH0.tar.gz) = 9c696582ce47557556c7d6a14c96236ae5913124d15a63d3a78b384336d1a817
